@@ -14,6 +14,7 @@ describe('NestJs Override Modules', () => {
       @Module({
         imports: [FirstModule],
         providers: [{ provide: tokenSymbol, useValue: 'Robin' }],
+        exports: [tokenSymbol],
       })
       class SecondModule {}
       const moduleRef = await Test.createTestingModule({
