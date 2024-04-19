@@ -2,23 +2,24 @@ import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { describe, it, expect } from 'vitest';
 
+const tokenSymbol = Symbol('Some-Token');
 describe('NestJs Override Modules', () => {
   describe('Can override a provider imported via a module', () => {
     it('should work', async () => {
       @Module({
-        providers: [{ provide: 'Some-Token', useValue: 'Batman' }],
+        providers: [{ provide: tokenSymbol, useValue: 'Batman' }],
       })
       class FirstModule {}
 
       @Module({
         imports: [FirstModule],
-        providers: [{ provide: 'Some-Token', useValue: 'Robin' }],
+        providers: [{ provide: tokenSymbol, useValue: 'Robin' }],
       })
       class SecondModule {}
       const moduleRef = await Test.createTestingModule({
         imports: [SecondModule],
       }).compile();
-      const value = moduleRef.get('Some-Token');
+      const value = moduleRef.get(tokenSymbol);
       expect(value).toEqual('Robin');
     });
   });
@@ -32,7 +33,7 @@ describe('NestJs Override Modules', () => {
             module: FirstModule,
             providers: [
               {
-                provide: 'Some-Token',
+                provide: tokenSymbol,
                 useValue: 'Batman',
               },
             ],
@@ -44,7 +45,7 @@ describe('NestJs Override Modules', () => {
       @Module({
         imports: [
           FirstModule.register({
-            providers: [{ provide: 'Some-Token', useValue: 'Robin' }],
+            providers: [{ provide: tokenSymbol, useValue: 'Robin' }],
           }),
         ],
       })
@@ -52,7 +53,7 @@ describe('NestJs Override Modules', () => {
       const moduleRef = await Test.createTestingModule({
         imports: [SecondModule],
       }).compile();
-      const value = moduleRef.get('Some-Token');
+      const value = moduleRef.get(tokenSymbol);
       expect(value).toEqual('Robin');
     });
   });
