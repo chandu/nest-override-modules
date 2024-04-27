@@ -1,6 +1,14 @@
-import { DynamicModule, Module, ModuleMetadata } from '@nestjs/common';
+import {
+  DynamicModule,
+  INestApplication,
+  Module,
+  ModuleMetadata,
+  Scope,
+} from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
 import { Test } from '@nestjs/testing';
 import { describe, it, expect } from 'vitest';
+import * as util from 'util';
 
 const tokenSymbol = Symbol('Some-Token');
 describe('NestJs Override Modules', () => {
@@ -13,15 +21,29 @@ describe('NestJs Override Modules', () => {
 
       @Module({
         imports: [FirstModule],
-        providers: [{ provide: tokenSymbol, useValue: 'Robin' }],
+        providers: [
+          {
+            provide: tokenSymbol,
+            useFactory() {
+              return 'ROBIN';
+            },
+          },
+        ],
         exports: [tokenSymbol],
       })
       class SecondModule {}
-      const moduleRef = await Test.createTestingModule({
-        imports: [SecondModule],
-      }).compile();
-      const value = moduleRef.get(tokenSymbol);
-      expect(value).toEqual('Robin');
+
+      let app: INestApplication | null = null;
+      try {
+        app = await NestFactory.create(SecondModule, {
+          logger: false,
+        });
+
+        const value = app.get(tokenSymbol);
+        expect(value).toEqual('Robin');
+      } finally {
+        app?.close();
+      }
     });
   });
 
